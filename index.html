@@ -1,18 +1,62 @@
 <!doctype html>
 <html lang="en">
+<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#000000">
-<meta name="description" content="PØLÆRIS. A scroll-controlled short film.">
-<title>PØLÆRIS</title>
+<meta name="theme-color" content="#09090c">
+<meta name="description" content="Meet PØLÆRIS, a five-person NRL robotics team. Five competitors. One North Star.">
+<title>PØLÆRIS — One North Star</title>
 <link rel="icon" href="assets/compass.png">
 <link rel="stylesheet" href="film.css">
 <script defer src="film.js"></script>
-<main aria-label="PØLÆRIS short film">
-  <p class="sr-only">A monochrome tree gives way to darkness. A single star appears, then a field of stars. The camera pulls back through the view of a computer monitor. A tracking line identifies PØLÆRIS before the star breaks through the glass and reveals the team's compass emblem.</p>
-  <div class="frame" aria-hidden="true">
-    <canvas></canvas>
-    <div class="end"><img src="assets/compass.png" alt=""><span>PØLÆRIS</span></div>
-  </div>
+</head>
+<body>
+<a class="skip" href="#team">Skip to Meet the Team</a>
+<main>
+  <section class="film" aria-label="PØLÆRIS short film">
+    <p class="sr-only">A tree at dusk gives way to darkness. A single light appears, then a field of stars. The camera pulls back to a monitor. A tracking line identifies PØLÆRIS before the light breaks through the glass and reveals the team's compass.</p>
+    <div class="frame" aria-hidden="true">
+      <canvas></canvas>
+      <div class="end"><img src="assets/compass.png" alt=""><span>PØLÆRIS</span></div>
+    </div>
+  </section>
+
+  <section class="crew" id="team" aria-labelledby="team-title">
+    <div class="wrap">
+      <div class="marker"><span>01 / CREW</span><span>PØLÆRIS · NRL ROBOTICS</span></div>
+      <div class="section-head"><h1 id="team-title">Meet the <em>team.</em></h1><p>Five competitors. One North Star.</p></div>
+      <ol class="roster">
+        <li><span class="number">01</span><div><h2>Aahir Seth</h2><p>Two-time FTC Paraducks Programming Head</p></div></li>
+        <li><span class="number">02</span><div><h2>Arjun Zaveri</h2><p>Two-time FTC Paraducks Mechanical Head</p></div></li>
+        <li><span class="number">03</span><div><h2>Piyansh Kaarthik</h2><p>VEX IQ Curious City Programming Head and driver</p><p class="distinction">2025–2026 TalentSprint AI Olympiad winner</p></div></li>
+        <li><span class="number">04</span><div><h2>Reyansh Parikh</h2><p>VEX IQ Curious City mechanics member and driver</p></div></li>
+        <li><span class="number">05</span><div><h2>Aarav Damodar</h2><p>PØLÆRIS team member</p></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="arena" id="nrl" aria-labelledby="arena-title">
+    <div class="wrap">
+      <div class="marker"><span>02 / COMPETITION</span><span>NRL</span></div>
+      <div class="arena-layout">
+        <div><h2 id="arena-title">Built for<br><em>the arena.</em></h2><p>Combat robotics puts design, fabrication and driving under the same pressure. In the NRL arena, the choices made at the workbench meet the decisions made in the moment.</p></div>
+        <figure><img src="assets/compass.png" alt="The PØLÆRIS gold and blue compass emblem" loading="lazy"><figcaption>FIG. 01 / THE NORTH STAR</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="partners" id="sponsor" aria-labelledby="sponsor-title">
+    <div class="wrap">
+      <div class="marker"><span>03 / SPONSORSHIP</span><span>PØLÆRIS</span></div>
+      <div class="section-head"><h2 id="sponsor-title">Back the <em>build.</em></h2><p>Help PØLÆRIS get from the workbench to the arena.</p></div>
+      <dl>
+        <div><dt>01 / Components</dt><dd>Materials and hardware to prototype, test and replace parts.</dd></div>
+        <div><dt>02 / Fabrication</dt><dd>Workshop access, tooling or expertise to turn designs into parts.</dd></div>
+        <div><dt>03 / Competition</dt><dd>Support for the costs of getting the team and robot to the event.</dd></div>
+      </dl>
+    </div>
+  </section>
 </main>
+<footer><div class="wrap"><a href="#" class="brand">PØLÆRIS</a><nav aria-label="Explore PØLÆRIS"><a href="#team">Team</a><a href="#nrl">NRL</a><a href="#sponsor">Sponsorship</a><a href="#">Replay ↑</a></nav></div></footer>
+</body>
 </html>

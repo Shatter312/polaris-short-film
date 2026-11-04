@@ -1,6 +1,8 @@
 const canvas = document.querySelector('canvas');
 const context = canvas.getContext('2d', { alpha: false });
 const end = document.querySelector('.end');
+const film = document.querySelector('.film');
+const stage = document.querySelector('.frame');
 const reduce = matchMedia('(prefers-reduced-motion: reduce)');
 const clamp = x => Math.min(1, Math.max(0, x));
 const range = (t, a, b) => clamp((t - a) / (b - a));
@@ -69,26 +71,73 @@ function line(points, color, visible = 1) {
   context.stroke();
 }
 
+const leaves = Array.from({ length: 48 }, (_, i) => ({
+  x: .428 + random(i*8+610)*.18,
+  y: .265 + random(i*8+611)*.225,
+  release: .012 + random(i*8+612)*.13,
+  size: .0025 + random(i*8+613)**2*.008,
+  depth: .45 + random(i*8+614)*.75,
+  drift: random(i*8+615)-.27,
+  phase: random(i*8+616)*Math.PI*2,
+  color: ['#a9a9bf','#77798d','#cec6d1','#514d64'][i%4]
+}));
+
 function opening(t) {
   if (!loaded(tree)) return;
-  const tilt = ease(t,.022,.246);
-  const exposure = 1 - ease(t,.093,.232);
-  const scale = Math.max(w/tree.width,h/tree.height) * (1 + tilt*.12);
-  context.save();
-  context.globalAlpha = exposure;
-  context.filter = 'grayscale(1) contrast(1.13)';
-  const top = (h-tree.height*scale)/2+h*.76*tilt;
-  context.drawImage(tree,(w-tree.width*scale)/2,top,tree.width*scale,tree.height*scale);
-  context.restore();
-  if (tilt > 0) {
-    const depth = h*.24;
-    const veil = context.createLinearGradient(0,top,0,top+depth);
-    veil.addColorStop(0,"#000");
-    veil.addColorStop(1,"transparent");
-    rect(0,top,w,depth,veil);
+  const gaze = ease(t,.016,.30);
+  const darkness = ease(t,.024,.357);
+  const scale = Math.max(w/tree.width,h/tree.height) * (1 + gaze*.16);
+  const drawnWidth = tree.width * scale;
+  const drawnHeight = tree.height * scale;
+  const pitch = Math.tan(gaze * .069);
+  const focal = h * .96;
+  const sourceAt = y => {
+    const ray = (y-h/2)/focal;
+    return ((ray-pitch)/(1+ray*pitch))*focal + h/2;
+  };
+  const shift = Math.max(0,-sourceAt(0)-(drawnHeight-h)/2);
+  const imageY = (h-drawnHeight)/2 - shift;
+  const imageX = (w-drawnWidth)/2;
+  context.globalAlpha = 1-darkness;
+  if (gaze < .0001) {
+    context.drawImage(tree,imageX,imageY,drawnWidth,drawnHeight);
+  } else {
+    // Reproject narrow scanlines for a small camera pitch around the lens.
+    for (let y=0;y<h;y+=8) {
+      const bottom = Math.min(h,y+8.4);
+      const a = sourceAt(y);
+      const b = sourceAt(bottom);
+      const perspective = 1 + ((y-h/2)/focal)*pitch;
+      const width = drawnWidth*Math.max(1,perspective);
+      context.drawImage(tree,0,(a-imageY)/scale,tree.width,(b-a)/scale,(w-width)/2,y,width,bottom-y);
+    }
+  }
+  context.globalAlpha = 1;
+  if (darkness > 0 && darkness < 1) {
+    rect(0,0,w,h,`rgba(16,12,31,${Math.sin(darkness*Math.PI)*.16})`);
+  }
+
+  for (const leaf of leaves) {
+    const age = range(t,leaf.release,leaf.release+.23);
+    if (age === 0 || age === 1) continue;
+    const flutter = age*13 + leaf.phase;
+    const x = imageX + drawnWidth*leaf.x + w*(age*leaf.drift*.28 + Math.sin(flutter)*age*.03);
+    const y = imageY + drawnHeight*leaf.y + h*(gaze*.075+age**1.6*.76*leaf.depth);
+    const size = Math.max(1.25,Math.min(w,h)*leaf.size*leaf.depth);
+    context.save();
+    context.globalAlpha = (1-darkness)*ease(age,0,.10)*(1-ease(age,.80,1))*.85;
+    context.translate(x,y);
+    context.rotate(flutter*.62);
+    context.scale(.2+.8*Math.abs(Math.cos(flutter)),1);
+    context.fillStyle = leaf.color;
+    context.beginPath();
+    context.moveTo(0,-size);
+    context.bezierCurveTo(size,-size*.6,size*.65,size*.8,0,size);
+    context.bezierCurveTo(-size*.8,size*.3,-size*.63,-size*.55,0,-size);
+    context.fill();
+    context.restore();
   }
 }
-
 function viewport(t) {
   if (t <= .694) return { x: 0, y: 0, width: w, height: h };
   const pull = ease(t,.694,.791);
@@ -136,11 +185,13 @@ function starfield(box,t,time) {
       context.fill();
     }
   }
-  const intensity = ease(t,.347,.381)*opacity;
+  const intensity = ease(t,.361,.425)*opacity;
   const twinkle = .91 + .06*Math.sin(time*.0027) + .03*Math.sin(time*.0062);
   const px=x+width/2, py=y+height/2;
-  const radius=mix(.62,1.38,ease(t,.378,.678));
-  bloom(px,py,radius*8,'#fff',intensity*.31);
+  const radius=mix(.65,2.1,ease(t,.37,.63));
+  const halo = ease(t,.37,.49)*(1-ease(t,.56,.70));
+  bloom(px,py,Math.min(w,h)*.11,'#e2c1a2',intensity*halo*.14);
+  bloom(px,py,radius*12,'#fff7e9',intensity*.37);
   context.fillStyle = `rgba(255,255,255,${intensity*twinkle})`;
   context.beginPath();
   context.arc(px,py,radius,0,Math.PI*2);
@@ -233,12 +284,14 @@ function breach(box,x,y,t) {
 
 function draw(time) {
   frame = 0;
-  const duration = document.documentElement.scrollHeight - innerHeight;
-  const p = clamp(scrollY / Math.max(1,duration));
+  const bounds = film.getBoundingClientRect();
+  if (bounds.bottom <= 0) return;
+  const duration = bounds.height - stage.clientHeight;
+  const p = clamp(-bounds.top / Math.max(1,duration));
   const t = reduce.matches ? p < .2 ? 0 : p < .4 ? .47 : p < .6 ? .68 : p < .8 ? .858 : 1 : p;
   rect(0,0,w,h,'#000');
-  if (t < .246) opening(t);
-  if (t >= .347 && t < .953) {
+  if (t < .357) opening(t);
+  if (t >= .361 && t < .953) {
     const box = viewport(t);
     starfield(box,t,time);
     const x=box.x+box.width/2, y=box.y+box.height/2;
@@ -258,7 +311,7 @@ function draw(time) {
     line([[w/2+gap,y],[w/2+margin,y]],'#9b824d',resolve);
     context.globalAlpha = 1;
   }
-  if (!reduce.matches && t >= .347 && t < .590) schedule();
+  if (!reduce.matches && t >= .361 && t < .590) schedule();
 }
 
 function schedule() {
@@ -266,9 +319,9 @@ function schedule() {
 }
 
 function resize() {
-  w = innerWidth;
-  h = innerHeight;
-  const ratio = Math.min(2,devicePixelRatio || 1);
+  w = stage.clientWidth;
+  h = stage.clientHeight;
+  const ratio = Math.min(3, devicePixelRatio || 1, Math.sqrt(12000000 / Math.max(1,w*h)));
   canvas.width = Math.round(w*ratio);
   canvas.height = Math.round(h*ratio);
   context.setTransform(ratio,0,0,ratio,0,0);
@@ -276,14 +329,15 @@ function resize() {
 }
 
 if (context) {
-  document.documentElement.classList.add('ready');
-  tree.addEventListener('load',schedule);
+  const start = () => {
+    document.documentElement.classList.add('ready');
+    resize();
+  };
+  if (loaded(tree)) start();
+  else tree.addEventListener('load',start,{once:true});
   room.addEventListener('load',schedule);
   addEventListener('scroll',schedule,{passive:true});
   addEventListener('resize',resize);
-  reduce.addEventListener('change',schedule);
-  resize();
+  reduce.addEventListener('change',resize);
+  new ResizeObserver(resize).observe(stage);
 }
-
-
-
