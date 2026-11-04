@@ -1,0 +1,13 @@
+* { box-sizing: border-box; }
+html { background: #000; scrollbar-width: none; overscroll-behavior: none; }
+html::-webkit-scrollbar { display: none; }
+body { margin: 0; color: #fff; }
+main { height: 1160svh; }
+.frame { position: fixed; inset: 0; overflow: hidden; background: #000 url(assets/mokka-tree.jpg) center / cover; filter: grayscale(1); }
+canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.end { position: absolute; inset: 0; display: grid; justify-items: center; align-content: center; gap: 28px; opacity: 0; pointer-events: none; }
+.end img { width: clamp(110px, 19vmin, 230px); display: block; filter: saturate(.68); mask-image: radial-gradient(ellipse, #000 48%, #000 59%, transparent 72%); }
+.end span { font: 400 clamp(19px, 3.4vmin, 36px)/1 Arial, sans-serif; letter-spacing: .48em; padding-left: .48em; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.ready .frame { background: #000; filter: none; }
+@media (prefers-reduced-motion: reduce) { main { height: 580svh; } }
